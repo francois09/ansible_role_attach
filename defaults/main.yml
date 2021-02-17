@@ -1,0 +1,7 @@
+---
+# Default do nothing
+attach__install: False
+attach__configure: False
+
+# defaults package files for attach
+attach__default_packages: []

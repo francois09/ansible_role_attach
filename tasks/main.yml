@@ -1,0 +1,48 @@
+---
+- name: Attach install packages
+  apt:
+    name: "{{ attach__default_packages }}"
+    update_cache: yes
+    state: present
+  when: attach__install
+
+- name: Ensure client mount directory exists
+  file:
+    path: "{{ item.path }}"
+    state: directory
+  with_items: "{{ attach__vols }}"
+  when:
+    - attach__configure
+    - item.state == 'mounted'
+
+- name: Mount/umount attach
+  mount:
+    src: "{{ item.src}}"
+    path: "{{ item.path}}"
+    fstype: "{{ item.fstype}}"
+    opts: "{{ item.options}}"
+    state: "{{ item.state}}"
+  with_items: "{{ attach__vols }}"
+  when: attach__configure
+
+- name: Remove from /etc/fstab
+  mount:
+    src: "{{ item.src}}"
+    path: "{{ item.path}}"
+    fstype: "{{ item.fstype}}"
+    opts: "{{ item.options}}"
+    state: absent
+  with_items: "{{ attach__vols }}"
+  when:
+    - attach__configure
+    - item.state != "mounted"
+
+- name: Remove client mount directory
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ attach__vols }}"
+  when:
+    - attach__configure
+    - item.state != 'mounted'
+
